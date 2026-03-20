@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Виниловый плеер | Просто для учителя</title>
+    <style>
+        /* =========================================
+           ОБЩИЕ СТИЛИ РЕДАКТОРА
+           ========================================= */
+        :root {
+            --bg: #f4f7f6;
+            --text: #333;
+            --primary: #8a2be2;
+            --panel: #fff;
+            --border: #ddd;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100vw; height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: transparent; overflow: hidden;
+        }
+
+        #editor-container {
+            display: none; background-color: var(--bg); color: var(--text);
+            width: 100%; height: 100%; padding: 15px; box-sizing: border-box;
+            overflow-y: auto; align-items: center; flex-direction: column;
+        }
+        
+        .panel-box {
+            max-width: 1100px; width: 100%; background: var(--panel);
+            padding: 25px 35px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            box-sizing: border-box; margin-bottom: 20px;
+        }
+        h1 { text-align: center; margin: 0 0 20px; color: var(--primary); font-size: 26px; }
+        
+        .layout { display: flex; gap: 30px; flex-wrap: wrap; }
+        .controls { flex: 1.2; min-width: 350px; display: flex; flex-direction: column; gap: 15px; }
+        .preview { flex: 1; min-width: 350px; display: flex; flex-direction: column; align-items: center; }
+
+        .input-group { display: flex; flex-direction: column; gap: 8px; background: #f9f9f9; padding: 12px; border-radius: 10px; border: 1px solid #eee; }
+        input[type="text"], input[type="url"] { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); outline: none; font-size: 14px; }
+        
+        input[type="color"] { width: 100%; height: 40px; border: none; border-radius: 8px; cursor: pointer; padding: 0; margin-top:5px;}
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 8px; }
+
+        /* Стили для инструкций */
+        .instruction-box { font-size:13px; color:#333; background:#edeffd; border-radius:10px; padding:15px; line-height:1.6; border: 1px solid #d0d7f3;}
+        .instruction-box details { margin-bottom: 8px; background: #fff; padding: 10px 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .instruction-box details:last-child { margin-bottom: 0; }
+        .instruction-box summary { font-weight: 600; cursor: pointer; color: var(--primary); outline: none; list-style: none; display: flex; align-items: center; justify-content: space-between; font-size: 14px;}
+        .instruction-box summary::-webkit-details-marker { display: none; }
+        .instruction-box summary::after { content: '▼'; font-size: 10px; color: #888; transition: transform 0.2s;}
+        .instruction-box details[open] summary::after { transform: rotate(180deg); }
+        .instruction-box details p { margin: 8px 0 0 0; font-size: 13px; line-height: 1.6; color: #444; border-top: 1px solid #f0f0f0; padding-top: 8px;}
+        
+        button.action-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        button.action-btn:hover { filter: brightness(1.1); }
+
+        .preview-box {
+            width: 100%; max-width: 450px; aspect-ratio: 1/1; 
+            border: 2px dashed var(--border); border-radius: 20px;
+            background: #eee;
+            position: relative; overflow: hidden; resize: both; display: flex; justify-content: center; align-items: center;
+        }
+        .preview-box iframe { width: 100%; height: 100%; border: none; }
+
+        footer { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); text-align: center; font-size: 13px; color: #777; width: 100%; max-width: 1100px; }
+        .social-links { display: flex; gap: 20px; justify-content: center; margin-top: 10px; }
+        .social-links a { color: #777; text-decoration: none; display: flex; align-items: center; gap: 5px; font-weight: 600; transition: 0.2s;}
+        .social-links a:hover { color: var(--primary); }
+        .social-links svg { width: 20px; height: 20px; fill: currentColor; }
+
+        /* =========================================
+           СТИЛИ ВИДЖЕТА (ВИНИЛ)
+           ========================================= */
+        #widget-container {
+            display: none; width: 100%; height: 100%;
+            justify-content: center; align-items: center; 
+            padding: 2vmin; box-sizing: border-box;
+        }
+
+        .turntable {
+            position: relative; width: 90vmin; height: 90vmin; max-width: 100%; max-height: 100%;
+            background: var(--widget-color, #e0e5ec);
+            border-radius: 8vmin; box-shadow: 0 4vmin 8vmin rgba(0,0,0,0.2), inset 0 1vmin 2vmin rgba(255,255,255,0.5);
+            display: flex; justify-content: center; align-items: center;
+            border: 1vmin solid rgba(255,255,255,0.3);
+        }
+
+        /* Пластинка */
+        .vinyl {
+            width: 76%; height: 76%; border-radius: 50%;
+            background: #111;
+            /* Текстура дорожек */
+            background-image: repeating-radial-gradient(#111 0%, #000 2%, #111 4%);
+            box-shadow: 0 2vmin 4vmin rgba(0,0,0,0.5), inset 0 0 2vmin rgba(255,255,255,0.2);
+            position: relative; display: flex; justify-content: center; align-items: center;
+            transition: transform 0.2s linear;
+        }
+
+        /* Анимация вращения */
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .playing .vinyl { animation: spin 4s linear infinite; }
+
+        /* Яблоко (центр пластинки) */
+        .vinyl-label {
+            width: 35%; height: 35%; border-radius: 50%;
+            background: var(--primary);
+            background-size: cover; background-position: center;
+            border: 0.5vmin solid #222;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: inset 0 0 1vmin rgba(0,0,0,0.5);
+        }
+        /* Дырка в центре */
+        .vinyl-hole { width: 10%; height: 10%; background: #222; border-radius: 50%; box-shadow: inset 0 0.5vmin 1vmin rgba(0,0,0,0.8); }
+
+        /* Тонарм (игла) */
+        .tonearm {
+            position: absolute; top: 8%; right: 8%;
+            width: 15%; height: 45%;
+            transform-origin: 50% 10%; /* Ось вращения сверху */
+            transform: rotate(-25deg);
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+        }
+        .playing .tonearm { transform: rotate(15deg); } /* Опускается на пластинку */
+
+        .tonearm-base {
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 6vmin; height: 6vmin; background: #ddd; border-radius: 50%;
+            box-shadow: 0 1vmin 2vmin rgba(0,0,0,0.3), inset 0 0.5vmin 1vmin #fff;
+            border: 0.5vmin solid #aaa;
+        }
+        .tonearm-stick {
+            position: absolute; top: 4vmin; left: 50%; transform: translateX(-50%);
+            width: 1.5vmin; height: 80%; background: linear-gradient(to right, #ccc, #fff, #ccc);
+            border-radius: 1vmin; box-shadow: 2vmin 1vmin 2vmin rgba(0,0,0,0.3);
+        }
+        .tonearm-head {
+            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%) rotate(20deg);
+            width: 4vmin; height: 6vmin; background: #333; border-radius: 0.5vmin;
+            box-shadow: 2vmin 2vmin 2vmin rgba(0,0,0,0.3);
+        }
+
+        /* Панель управления */
+        .controls-panel {
+            position: absolute; bottom: 4%; left: 5%; right: 5%;
+            background: rgba(255,255,255,0.8); backdrop-filter: blur(5px);
+            padding: 2vmin 4vmin; border-radius: 4vmin;
+            display: flex; align-items: center; gap: 3vmin;
+            box-shadow: 0 1vmin 2vmin rgba(0,0,0,0.1);
+        }
+
+        .play-btn {
+            width: 8vmin; height: 8vmin; min-width: 8vmin; border-radius: 50%;
+            background: var(--primary); color: white; border: none;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; transition: 0.2s; box-shadow: 0 1vmin 2vmin rgba(0,0,0,0.2);
+        }
+        .play-btn:hover { transform: scale(1.05); }
+        .play-btn svg { width: 4vmin; height: 4vmin; fill: currentColor; }
+
+        /* Прогресс-бар */
+        .progress-container { flex: 1; display: flex; flex-direction: column; gap: 1vmin; }
+        .time-info { display: flex; justify-content: space-between; font-size: 2.5vmin; font-weight: bold; color: #555; font-family: monospace;}
+        
+        .progress-bar {
+            width: 100%; height: 1.5vmin; background: #ddd; border-radius: 1vmin;
+            cursor: pointer; position: relative; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; background: var(--primary); width: 0%; border-radius: 1vmin;
+            transition: width 0.1s linear; pointer-events: none;
+        }
+
+        /* Сообщение об ошибке */
+        #error-msg { position: absolute; top: 5%; background: #ff4757; color: white; padding: 1vmin 3vmin; border-radius: 2vmin; font-size: 3vmin; font-weight: bold; opacity: 0; transition: 0.3s; z-index: 20;}
+    </style>
+</head>
+<body>
+
+<!-- РЕДАКТОР -->
+<div id="editor-container">
+    <div class="panel-box">
+        <h1>Виниловый плеер</h1>
+        <div class="layout">
+            <div class="controls">
+                
+                <div class="input-group">
+                    <label style="font-size: 13px; font-weight: 600; color: #555;">Ссылка на аудиофайл:</label>
+                    <input type="url" id="audioInput" placeholder="Вставьте ссылку на аудио..." oninput="updateCode()">
+                    
+                    <!-- ПОШАГОВАЯ ИНСТРУКЦИЯ ДЛЯ КОЛЛЕГ -->
+                    <div class="instruction-box">
+                        <b style="display:block; margin-bottom:10px; font-size: 14px;">Где взять ссылку на аудио (выберите способ):</b>
+                        
+                        <details>
+                            <summary>🎤 Способ 1: Vocaroo (Самый простой)</summary>
+                            <p>
+                                1. Перейдите на сайт <a href="https://vocaroo.com/" target="_blank" style="color:var(--primary); font-weight:bold;">Vocaroo.com</a>.<br>
+                                2. Нажмите на красную кнопку микрофона, чтобы записать голос, <b>ИЛИ</b> нажмите <i>"Загрузить"</i> (Upload) под кнопкой, чтобы выбрать готовый mp3-файл с компьютера.<br>
+                                3. Нажмите <b>"Сохранить и поделиться"</b>.<br>
+                                4. Скопируйте появившуюся ссылку (например, <i>https://vocaroo.com/12345...</i>) и вставьте в поле выше.
+                            </p>
+                        </details>
+
+                        <details>
+                            <summary>📁 Способ 2: Google Диск</summary>
+                            <p>
+                                1. Загрузите ваш аудиофайл (mp3 или wav) на свой Google Диск.<br>
+                                2. Кликните по загруженному файлу правой кнопкой мыши и выберите <b>"Поделиться"</b>.<br>
+                                3. В разделе "Общий доступ" обязательно измените настройку на <b>"Все, у кого есть ссылка"</b>.<br>
+                                4. Нажмите <b>"Копировать ссылку"</b> и вставьте её в поле выше. Виджет сам преобразует её в нужный формат!
+                            </p>
+                        </details>
+
+                        <details>
+                            <summary>📦 Способ 3: Dropbox</summary>
+                            <p>
+                                1. Загрузите аудиофайл в ваш Dropbox.<br>
+                                2. Наведите курсор на файл и нажмите кнопку <b>"Поделиться"</b> (Share) &rarr; "Копировать ссылку" (Copy link).<br>
+                                3. Вставьте скопированную ссылку в поле выше.
+                            </p>
+                        </details>
+
+                        <details>
+                            <summary>🔗 Способ 4: Прямая ссылка</summary>
+                            <p>
+                                Если у вас есть собственный сайт или хостинг, просто скопируйте прямую ссылку на файл. Она обязательно должна заканчиваться на <b>.mp3</b> или <b>.wav</b> (например: <i>https://mysite.com/audio/track.mp3</i>).
+                            </p>
+                        </details>
+                    </div>
+
+                    <label style="font-size: 13px; font-weight: 600; color: #555; margin-top: 10px;">Обложка пластинки (ссылка на картинку, необязательно):</label>
+                    <input type="url" id="coverInput" placeholder="https://example.com/cover.jpg" oninput="updateCode()">
+                </div>
+
+                <div style="display:flex; gap:15px; align-items:center; margin-top:10px;">
+                    <div style="flex:1">
+                        <label style="font-weight: 600; font-size: 13px; color: #555;">Цвет корпуса:</label>
+                        <input type="color" id="bgPicker" value="#e0e5ec" oninput="updateCode()">
+                    </div>
+                    <div style="flex:1">
+                        <label style="font-weight: 600; font-size: 13px; color: #555;">Цвет акцентов:</label>
+                        <input type="color" id="accentPicker" value="#8a2be2" oninput="updateCode()">
+                    </div>
+                </div>
+
+                <button id="copyBtn" class="action-btn" style="margin-top: 15px;" onclick="copyCode()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    Скопировать код iframe
+                </button>
+                <textarea id="codeOutput" style="width: 100%; height: 60px; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-family: monospace; font-size: 11px; background: #f4f7f6; resize: none; box-sizing: border-box; margin-top: 10px;" readonly></textarea>
+            </div>
+            
+            <div class="preview">
+                <label style="font-weight: 600; font-size: 13px; color: #555; margin-bottom: 10px;">Предпросмотр (интерактивный)</label>
+                <div class="preview-box">
+                    <iframe id="previewFrame" allowtransparency="true"></iframe>
+                </div>
+            </div>
+        </div>
+        <footer>
+            <div>Автор: <b>Кóденцева Алёна</b>, блог <i>Просто для учителя | Easy for busy</i></div>
+            <div class="social-links">
+                <a href="https://t.me/easyfrbusy" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.19-.08-.05-.19-.02-.27 0-.12.03-1.96 1.25-5.54 3.67-.52.36-.99.53-1.41.52-.46-.01-1.35-.26-2.01-.48-.81-.27-1.46-.42-1.4-.88.03-.24.36-.49 1-.76 3.91-1.7 6.51-2.82 7.79-3.35 3.7-1.53 4.47-1.8 4.97-1.81.11 0 .35.03.5.15.12.1.16.23.17.33-.02.04-.02.13-.03.22z"/></svg>
+                    Telegram
+                </a>
+                <a href="https://vk.com/easyfrbusy" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24"><path d="M15.07 2H8.93C3.33 2 2 3.33 2 8.93v6.14C2 20.67 3.33 22 8.93 22h6.14c5.6 0 6.93-1.33 6.93-6.93V8.93C22 3.33 20.67 2 15.07 2zM17.46 16.35h-1.56c-.66 0-.84-.52-1.98-1.64-1.03-1-1.5-1.15-1.75-1.15-.34 0-.44.1-.44.6v1.44c0 .46-.14.75-1.4.75-2.06 0-4.32-1.25-5.91-3.52-2.39-3.41-3.03-5.99-3.03-6.42 0-.21.08-.42.5-.42h1.56c.4 0 .56.18.73.66 1.09 3.23 2.65 5.56 3.36 5.56.25 0 .36-.1.36-.61V8.67c-.05-1.09-.61-1.18-.61-1.56 0-.19.16-.4.44-.4h2.51c.36 0 .48.18.48.58v3.42c0 .48.22.61.36.61.25 0 .54-.14 1.15-.75 1.18-1.28 1.95-3.32 1.95-3.32.12-.34.34-.58.75-.58h1.56c.54 0 .66.28.56.66-.23 1.06-1.55 2.85-2.18 3.66-.41.52-.52.68 0 1.2 1.55 1.53 2.16 2.5 2.16 3.5 0 .38-.28.66-.99.66z"/></svg>
+                    ВКонтакте
+                </a>
+            </div>
+        </footer>
+    </div>
+</div>
+
+<!-- ВИДЖЕТ (ПЛЕЕР) -->
+<div id="widget-container">
+    <div id="error-msg">Ошибка загрузки аудио</div>
+    
+    <div class="turntable" id="turntable">
+        <div class="vinyl">
+            <div class="vinyl-label" id="vinylLabel">
+                <div class="vinyl-hole"></div>
+            </div>
+        </div>
+        
+        <div class="tonearm">
+            <div class="tonearm-stick"></div>
+            <div class="tonearm-head"></div>
+            <div class="tonearm-base"></div>
+        </div>
+
+        <div class="controls-panel">
+            <button class="play-btn" id="playBtn" onclick="togglePlay()">
+                <!-- Иконка Play -->
+                <svg id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <!-- Иконка Pause (скрыта) -->
+                <svg id="icon-pause" viewBox="0 0 24 24" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            
+            <div class="progress-container">
+                <div class="time-info">
+                    <span id="currentTime">0:00</span>
+                    <span id="totalTime">0:00</span>
+                </div>
+                <div class="progress-bar" id="progressBar" onclick="seekAudio(event)">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <audio id="audioPlayer"></audio>
+</div>
+
+<script>
+// ==========================================
+// УМНЫЙ КОНВЕРТЕР ССЫЛОК
+// ==========================================
+function convertUrl(url) {
+    if (!url) return '';
+    try {
+        // Vocaroo
+        const vocMatch = url.match(/vocaroo\.com\/([a-zA-Z0-9]+)/);
+        if (vocMatch) return `https://media1.vocaroo.com/mp3/${vocMatch[1]}`;
+        
+        // Google Drive
+        const gdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (gdMatch) return `https://drive.google.com/uc?export=download&id=${gdMatch[1]}`;
+        
+        // Dropbox
+        if (url.includes('dropbox.com')) return url.replace('dl=0', 'dl=1').replace('?dl=0', '?dl=1');
+        
+        return url; // Если прямая ссылка
+    } catch (e) { return url; }
+}
+
+// Форматирование времени (секунды -> мм:сс)
+function formatTime(seconds) {
+    if(isNaN(seconds)) return "0:00";
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+}
+
+// ==========================================
+// ЛОГИКА ВИДЖЕТА (ПЛЕЕР)
+// ==========================================
+const urlParams = new URLSearchParams(window.location.search);
+const configParam = urlParams.get('config');
+
+if (configParam) {
+    document.getElementById('widget-container').style.display = 'flex';
+    
+    let config = { a: '', img: '', bg: '#e0e5ec', c: '#8a2be2' };
+    try { config = JSON.parse(decodeURIComponent(atob(configParam))); } catch(err){}
+
+    // Применение цветов и обложки
+    document.documentElement.style.setProperty('--widget-color', config.bg);
+    document.documentElement.style.setProperty('--primary', config.c);
+    if(config.img) {
+        document.getElementById('vinylLabel').style.backgroundImage = `url('${config.img}')`;
+    }
+
+    const audio = document.getElementById('audioPlayer');
+    const turntable = document.getElementById('turntable');
+    const playBtn = document.getElementById('playBtn');
+    const iconPlay = document.getElementById('icon-play');
+    const iconPause = document.getElementById('icon-pause');
+    const progressFill = document.getElementById('progressFill');
+    const currentTimeEl = document.getElementById('currentTime');
+    const totalTimeEl = document.getElementById('totalTime');
+    const errorMsg = document.getElementById('error-msg');
+
+    // Загрузка аудио
+    if (config.a) {
+        audio.src = convertUrl(config.a);
+        audio.load();
+    }
+
+    // Метаданные загружены (получаем длину трека)
+    audio.addEventListener('loadedmetadata', () => {
+        totalTimeEl.innerText = formatTime(audio.duration);
+    });
+
+    // Ошибка загрузки
+    audio.addEventListener('error', () => {
+        if(config.a) {
+            errorMsg.style.opacity = '1';
+            setTimeout(() => errorMsg.style.opacity = '0', 4000);
+        }
+    });
+
+    // Обновление прогресс-бара
+    audio.addEventListener('timeupdate', () => {
+        const percent = (audio.currentTime / audio.duration) * 100;
+        progressFill.style.width = `${percent}%`;
+        currentTimeEl.innerText = formatTime(audio.currentTime);
+    });
+
+    // Конец трека
+    audio.addEventListener('ended', () => {
+        turntable.classList.remove('playing');
+        iconPlay.style.display = 'block';
+        iconPause.style.display = 'none';
+        progressFill.style.width = '0%';
+        currentTimeEl.innerText = "0:00";
+    });
+
+    // Функция Play/Pause
+    window.togglePlay = function() {
+        if (!audio.src || audio.src === window.location.href) return;
+        
+        if (audio.paused) {
+            audio.play().then(() => {
+                turntable.classList.add('playing');
+                iconPlay.style.display = 'none';
+                iconPause.style.display = 'block';
+            }).catch(() => {
+                errorMsg.innerText = "Ошибка воспроизведения";
+                errorMsg.style.opacity = '1';
+                setTimeout(() => errorMsg.style.opacity = '0', 3000);
+            });
+        } else {
+            audio.pause();
+            turntable.classList.remove('playing');
+            iconPlay.style.display = 'block';
+            iconPause.style.display = 'none';
+        }
+    };
+
+    // Перемотка
+    window.seekAudio = function(e) {
+        if(!audio.src) return;
+        const bar = document.getElementById('progressBar');
+        const clickX = e.offsetX;
+        const width = bar.clientWidth;
+        const seekTime = (clickX / width) * audio.duration;
+        audio.currentTime = seekTime;
+    };
+} 
+// ==========================================
+// ЛОГИКА РЕДАКТОРА
+// ==========================================
+else {
+    document.getElementById('editor-container').style.display = 'flex';
+
+    window.updateCode = function() {
+        const audioUrl = document.getElementById('audioInput').value.trim();
+        const coverUrl = document.getElementById('coverInput').value.trim();
+        const bgCol = document.getElementById('bgPicker').value;
+        const accentCol = document.getElementById('accentPicker').value;
+
+        const config = { a: audioUrl, img: coverUrl, bg: bgCol, c: accentCol };
+        const hash = btoa(encodeURIComponent(JSON.stringify(config)));
+        const url = window.location.href.split('?')[0] + '?config=' + hash;
+        
+        document.getElementById('previewFrame').src = url;
+        // Код iframe (квадратный, 1:1, размер 600px для хорошего вида винила)
+        document.getElementById('codeOutput').value = `<iframe src="${url}" width="100%" height="600" style="border:none; aspect-ratio:1/1; max-width:600px; max-height:600px;" allowtransparency="true" allow="autoplay"></iframe>`;
+    }
+
+    window.copyCode = function() {
+        document.getElementById('codeOutput').select();
+        document.execCommand('copy');
+        const btn = document.getElementById('copyBtn');
+        const orig = btn.innerHTML;
+        btn.innerHTML = 'Скопировано!';
+        btn.style.background = '#27ae60';
+        setTimeout(() => { btn.innerHTML = orig; btn.style.background = 'var(--primary)'; }, 2000);
+    };
+
+    // Запускаем предпросмотр сразу с пустыми/базовыми настройками
+    updateCode();
+}
+</script>
+</body>
+</html>
