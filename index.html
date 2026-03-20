@@ -56,6 +56,9 @@
         .instruction-box details[open] summary::after { transform: rotate(180deg); }
         .instruction-box details p { margin: 8px 0 0 0; font-size: 13px; line-height: 1.6; color: #444; border-top: 1px solid #f0f0f0; padding-top: 8px;}
         
+        /* Особое предупреждение Vocaroo */
+        .warning-box { background: #ffe5e5; padding: 10px; border-radius: 8px; border: 1px solid #ffcccc; margin-top: 8px; color: #c0392b; font-size: 12px; }
+
         button.action-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px; }
         button.action-btn:hover { filter: brightness(1.1); }
 
@@ -85,7 +88,7 @@
 
         .turntable {
             position: relative; 
-            width: 85vmin; height: 85vmin; /* Размер проигрывателя */
+            width: 85vmin; height: 85vmin; 
             max-width: 400px; max-height: 400px;
             background: var(--widget-color, #e0e5ec);
             border-radius: 6vmin; box-shadow: 0 4vmin 8vmin rgba(0,0,0,0.2), inset 0 1vmin 2vmin rgba(255,255,255,0.5);
@@ -130,7 +133,7 @@
             transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 10;
         }
-        .playing .tonearm { transform: rotate(15deg); } /* Опускается на пластинку */
+        .playing .tonearm { transform: rotate(15deg); }
 
         .tonearm-base {
             position: absolute; top: 0; left: 50%; transform: translateX(-50%);
@@ -149,19 +152,18 @@
             box-shadow: 2vmin 2vmin 2vmin rgba(0,0,0,0.3);
         }
 
-        /* Панель управления (ШИРИНА РАВНА ПРОИГРЫВАТЕЛЮ) */
+        /* Панель управления */
         .controls-panel {
-            width: 85vmin; /* Точно как у turntable */
-            max-width: 400px; /* Точно как у turntable */
+            width: 85vmin; max-width: 400px;
             background: rgba(255,255,255,0.9); backdrop-filter: blur(5px);
             padding: 2.5vmin 3vmin; border-radius: 4vmin;
             display: flex; align-items: center; gap: 3vmin;
             box-shadow: 0 2vmin 4vmin rgba(0,0,0,0.15);
-            box-sizing: border-box; /* Важно, чтобы паддинги не увеличивали ширину */
+            box-sizing: border-box; 
         }
 
         .play-btn {
-            width: 9vmin; height: 9vmin; min-width: 9vmin; max-width: 50px; max-height: 50px; border-radius: 50%;
+            width: 10vmin; height: 10vmin; min-width: 10vmin; max-width: 50px; max-height: 50px; border-radius: 50%;
             background: var(--primary); color: white; border: none;
             display: flex; justify-content: center; align-items: center;
             cursor: pointer; transition: 0.2s; box-shadow: 0 1vmin 2vmin rgba(0,0,0,0.2);
@@ -169,12 +171,25 @@
         .play-btn:hover { transform: scale(1.05); }
         .play-btn svg { width: 4.5vmin; height: 4.5vmin; max-width: 25px; max-height: 25px; fill: currentColor; }
 
-        /* Прогресс-бар */
-        .progress-container { flex: 1; display: flex; flex-direction: column; gap: 1.5vmin; }
-        .time-info { display: flex; justify-content: space-between; font-size: 2.8vmin; font-weight: bold; color: #555; font-family: monospace;}
+        /* Контейнер для прогресс-бара и времени/громкости */
+        .progress-container { flex: 1; display: flex; flex-direction: column; gap: 1.5vmin; justify-content: center;}
         
+        .top-info-row { display: flex; justify-content: space-between; align-items: center; width: 100%;}
+        .time-info { font-size: 2.5vmin; font-weight: bold; color: #555; font-family: monospace;}
+        
+        /* Управление громкостью */
+        .volume-control { display: flex; align-items: center; gap: 1vmin; }
+        .vol-btn { background: none; border: none; padding: 0; cursor: pointer; color: #777; display: flex; align-items: center; transition: 0.2s; }
+        .vol-btn:hover { color: var(--primary); }
+        .vol-btn svg { width: 3.5vmin; height: 3.5vmin; max-width: 20px; max-height: 20px; fill: currentColor; }
+        
+        .vol-slider { width: 12vmin; max-width: 60px; -webkit-appearance: none; background: transparent; cursor: pointer; }
+        .vol-slider::-webkit-slider-runnable-track { height: 4px; background: #ddd; border-radius: 2px; }
+        .vol-slider::-webkit-slider-thumb { -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; background: var(--primary); margin-top: -4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);}
+
+        /* Прогресс-бар */
         .progress-bar {
-            width: 100%; height: 2vmin; max-height: 12px; background: #ddd; border-radius: 1vmin;
+            width: 100%; height: 1.5vmin; max-height: 8px; background: #ddd; border-radius: 1vmin;
             cursor: pointer; position: relative; overflow: hidden;
         }
         .progress-fill {
@@ -199,26 +214,29 @@
                     <label style="font-size: 13px; font-weight: 600; color: #555;">Ссылка на аудиофайл:</label>
                     <input type="url" id="audioInput" placeholder="Вставьте ссылку на аудио..." oninput="onInputTrigger()">
                     
-                    <!-- ПОШАГОВАЯ ИНСТРУКЦИЯ ДЛЯ КОЛЛЕГ -->
+                    <!-- ИНСТРУКЦИЯ ПО АУДИО -->
                     <div class="instruction-box">
                         <b style="display:block; margin-bottom:10px; font-size: 14px;">Где взять ссылку на аудио (выберите способ):</b>
                         
                         <details>
                             <summary>🎤 Способ 1: Vocaroo (Самый простой)</summary>
                             <p>
-                                1. Перейдите на сайт <a href="https://vocaroo.com/" target="_blank" style="color:var(--primary); font-weight:bold;">Vocaroo.com</a>.<br>
-                                2. Запишите голос на микрофон <b>ИЛИ</b> нажмите <i>"Загрузить"</i> (Upload) под кнопкой, чтобы выбрать mp3-файл с компьютера.<br>
+                                1. Перейдите на <a href="https://vocaroo.com/" target="_blank" style="color:var(--primary); font-weight:bold;">Vocaroo.com</a>.<br>
+                                2. Запишите голос на микрофон <b>ИЛИ</b> нажмите <i>"Загрузить"</i> (Upload), чтобы выбрать mp3-файл с компьютера.<br>
                                 3. Нажмите <b>"Сохранить и поделиться"</b>.<br>
-                                4. Скопируйте ссылку (например, <i>https://voca.ro/123...</i> или <i>https://vocaroo.com/123...</i>) и вставьте в поле выше.
+                                4. Скопируйте ссылку (<i>https://voca.ro/...</i>) и вставьте в поле выше.
                             </p>
+                            <div class="warning-box">
+                                <b>⚠️ ВАЖНО:</b> Vocaroo хранит файлы всего несколько месяцев. <b>Не используйте</b> этот способ для долгосрочных курсов, иначе звук однажды пропадет! Идеально для быстрых тестов и разовых уроков.
+                            </div>
                         </details>
 
                         <details>
-                            <summary>📁 Способ 2: Google Диск</summary>
+                            <summary>📁 Способ 2: Google Диск (Надёжно)</summary>
                             <p>
-                                1. Загрузите ваш аудиофайл (mp3 или wav) на Google Диск.<br>
-                                2. Кликните по файлу правой кнопкой мыши и выберите <b>"Поделиться"</b>.<br>
-                                3. В разделе "Общий доступ" измените настройку на <b>"Все, у кого есть ссылка"</b>.<br>
+                                1. Загрузите аудиофайл (mp3/wav) на ваш Google Диск.<br>
+                                2. Кликните по файлу правой кнопкой мыши &rarr; <b>"Поделиться"</b>.<br>
+                                3. В разделе "Общий доступ" выберите <b>"Все, у кого есть ссылка"</b>.<br>
                                 4. Нажмите <b>"Копировать ссылку"</b> и вставьте её в поле выше. Виджет сам преобразует её в нужный формат!
                             </p>
                         </details>
@@ -226,22 +244,31 @@
                         <details>
                             <summary>📦 Способ 3: Dropbox</summary>
                             <p>
-                                1. Загрузите аудиофайл в ваш Dropbox.<br>
-                                2. Наведите курсор на файл и нажмите кнопку <b>"Поделиться"</b> (Share) &rarr; "Копировать ссылку" (Copy link).<br>
+                                1. Загрузите аудиофайл в Dropbox.<br>
+                                2. Нажмите кнопку <b>"Поделиться"</b> (Share) &rarr; "Копировать ссылку" (Copy link).<br>
                                 3. Вставьте скопированную ссылку в поле выше.
                             </p>
                         </details>
 
                         <details>
                             <summary>🔗 Способ 4: Прямая ссылка</summary>
-                            <p>
-                                Если у вас есть собственный хостинг или файлообменник, просто скопируйте прямую ссылку на файл. Она обязательно должна заканчиваться на <b>.mp3</b> или <b>.wav</b>.
-                            </p>
+                            <p>Если у вас есть собственный хостинг или файлообменник, просто скопируйте прямую ссылку на файл. Она обязательно должна заканчиваться на <b>.mp3</b> или <b>.wav</b>.</p>
                         </details>
                     </div>
 
-                    <label style="font-size: 13px; font-weight: 600; color: #555; margin-top: 10px;">Обложка пластинки (ссылка на картинку, необязательно):</label>
+                    <label style="font-size: 13px; font-weight: 600; color: #555; margin-top: 10px;">Обложка пластинки (необязательно):</label>
                     <input type="url" id="coverInput" placeholder="https://example.com/cover.jpg" oninput="onInputTrigger()">
+                    
+                    <!-- ИНСТРУКЦИЯ ПО ОБЛОЖКЕ -->
+                    <div class="instruction-box" style="margin-top: 5px;">
+                        <details>
+                            <summary>🖼️ Как добавить красивую обложку</summary>
+                            <p>
+                                • <b>Картинка без фона:</b> Перейдите на сайт <a href="https://creazilla.com/ru" target="_blank" style="color:var(--primary);">Creazilla</a>. Справа в фильтрах выберите <b>Клипарт</b>. Откройте картинку, кликните по ней правой кнопкой мыши &rarr; <b>Копировать URL картинки</b>.<br><br>
+                                • <b>Своя картинка:</b> Загрузите любое фото на бесплатный хостинг (например, <a href="https://ru.imgbb.com/" target="_blank" style="color:var(--primary);">ImgBB</a>). Получите <b>прямую ссылку</b> (заканчивается на .jpg или .png) и вставьте её сюда.
+                            </p>
+                        </details>
+                    </div>
                 </div>
 
                 <div style="display:flex; gap:15px; align-items:center; margin-top:10px;">
@@ -303,7 +330,7 @@
         </div>
     </div>
     
-    <!-- Панель управления (ТОЧНО ПО ШИРИНЕ ПРОИГРЫВАТЕЛЯ) -->
+    <!-- Панель управления -->
     <div class="controls-panel">
         <button class="play-btn" id="playBtn" onclick="togglePlay()">
             <svg id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -311,10 +338,21 @@
         </button>
         
         <div class="progress-container">
-            <div class="time-info">
-                <span id="currentTime">0:00</span>
-                <span id="totalTime">0:00</span>
+            <div class="top-info-row">
+                <div class="time-info">
+                    <span id="currentTime">0:00</span> / <span id="totalTime">0:00</span>
+                </div>
+                
+                <!-- Блок громкости -->
+                <div class="volume-control">
+                    <button class="vol-btn" onclick="toggleMute()">
+                        <svg id="icon-vol-high" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                        <svg id="icon-vol-mute" viewBox="0 0 24 24" style="display:none;"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+                    </button>
+                    <input type="range" id="volumeSlider" class="vol-slider" min="0" max="1" step="0.05" value="1" oninput="changeVolume(event)">
+                </div>
             </div>
+            
             <div class="progress-bar" id="progressBar" onclick="seekAudio(event)">
                 <div class="progress-fill" id="progressFill"></div>
             </div>
@@ -326,12 +364,12 @@
 
 <script>
 // ==========================================
-// УМНЫЙ КОНВЕРТЕР ССЫЛОК (ОБНОВЛЕН ДЛЯ VOCA.RO)
+// УМНЫЙ КОНВЕРТЕР ССЫЛОК
 // ==========================================
 function convertUrl(url) {
     if (!url) return '';
     try {
-        // Vocaroo (поддерживает voca.ro и vocaroo.com, любые ID)
+        // Vocaroo
         const vocMatch = url.match(/(?:vocaroo\.com|voca\.ro)\/([a-zA-Z0-9_-]+)/);
         if (vocMatch) return `https://media.vocaroo.com/mp3/${vocMatch[1]}`;
         
@@ -380,6 +418,11 @@ if (configParam) {
     const currentTimeEl = document.getElementById('currentTime');
     const totalTimeEl = document.getElementById('totalTime');
     const errorMsg = document.getElementById('error-msg');
+    
+    // Элементы громкости
+    const volSlider = document.getElementById('volumeSlider');
+    const iconVolHigh = document.getElementById('icon-vol-high');
+    const iconVolMute = document.getElementById('icon-vol-mute');
 
     if (config.a) {
         audio.src = convertUrl(config.a);
@@ -445,6 +488,30 @@ if (configParam) {
         const seekTime = (clickX / width) * audio.duration;
         audio.currentTime = seekTime;
     };
+
+    // Управление громкостью
+    window.changeVolume = function(e) {
+        audio.volume = e.target.value;
+        if(audio.volume > 0) audio.muted = false;
+        updateVolumeUI();
+    };
+
+    window.toggleMute = function() {
+        audio.muted = !audio.muted;
+        updateVolumeUI();
+    };
+
+    function updateVolumeUI() {
+        if (audio.muted || audio.volume == 0) {
+            iconVolHigh.style.display = 'none';
+            iconVolMute.style.display = 'block';
+            volSlider.value = 0;
+        } else {
+            iconVolHigh.style.display = 'block';
+            iconVolMute.style.display = 'none';
+            volSlider.value = audio.volume;
+        }
+    }
 } 
 // ==========================================
 // ЛОГИКА РЕДАКТОРА
@@ -452,11 +519,11 @@ if (configParam) {
 else {
     document.getElementById('editor-container').style.display = 'flex';
 
-    // Задержка (debounce), чтобы избежать ошибок Vocaroo при ручном вводе
+    // Задержка (debounce)
     let timeout = null;
     window.onInputTrigger = function() {
         clearTimeout(timeout);
-        timeout = setTimeout(updateCode, 500); // Ждем полсекунды после остановки ввода
+        timeout = setTimeout(updateCode, 500); 
     };
 
     window.updateCode = function() {
@@ -470,7 +537,7 @@ else {
         const url = window.location.href.split('?')[0] + '?config=' + hash;
         
         document.getElementById('previewFrame').src = url;
-        // Код iframe вытянут по высоте, так как панель теперь снизу
+        // Код iframe вытянут по высоте
         document.getElementById('codeOutput').value = `<iframe src="${url}" width="100%" height="650" style="border:none; max-width:450px; max-height:650px;" allowtransparency="true" allow="autoplay"></iframe>`;
     }
 
@@ -484,7 +551,7 @@ else {
         setTimeout(() => { btn.innerHTML = orig; btn.style.background = 'var(--primary)'; }, 2000);
     };
 
-    // Запускаем предпросмотр сразу
+    // Запускаем предпросмотр
     updateCode();
 }
 </script>
