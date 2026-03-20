@@ -60,7 +60,7 @@
         button.action-btn:hover { filter: brightness(1.1); }
 
         .preview-box {
-            width: 100%; max-width: 450px; aspect-ratio: 1/1; 
+            width: 100%; max-width: 450px; aspect-ratio: 4/5; /* Изменено под плеер с панелью внизу */
             border: 2px dashed var(--border); border-radius: 20px;
             background: #eee;
             position: relative; overflow: hidden; resize: both; display: flex; justify-content: center; align-items: center;
@@ -74,25 +74,26 @@
         .social-links svg { width: 20px; height: 20px; fill: currentColor; }
 
         /* =========================================
-           СТИЛИ ВИДЖЕТА (ВИНИЛ)
+           СТИЛИ ВИДЖЕТА (ВИНИЛ + ПАНЕЛЬ)
            ========================================= */
         #widget-container {
             display: none; width: 100%; height: 100%;
-            justify-content: center; align-items: center; 
-            padding: 2vmin; box-sizing: border-box;
+            flex-direction: column; justify-content: center; align-items: center; 
+            padding: 2vmin; box-sizing: border-box; gap: 3vmin;
+            position: relative;
         }
 
         .turntable {
-            position: relative; width: 90vmin; height: 90vmin; max-width: 100%; max-height: 100%;
+            position: relative; width: 80vmin; height: 80vmin; max-width: 400px; max-height: 400px;
             background: var(--widget-color, #e0e5ec);
-            border-radius: 8vmin; box-shadow: 0 4vmin 8vmin rgba(0,0,0,0.2), inset 0 1vmin 2vmin rgba(255,255,255,0.5);
+            border-radius: 6vmin; box-shadow: 0 4vmin 8vmin rgba(0,0,0,0.2), inset 0 1vmin 2vmin rgba(255,255,255,0.5);
             display: flex; justify-content: center; align-items: center;
             border: 1vmin solid rgba(255,255,255,0.3);
         }
 
         /* Пластинка */
         .vinyl {
-            width: 76%; height: 76%; border-radius: 50%;
+            width: 80%; height: 80%; border-radius: 50%;
             background: #111;
             /* Текстура дорожек */
             background-image: repeating-radial-gradient(#111 0%, #000 2%, #111 4%);
@@ -145,30 +146,31 @@
             box-shadow: 2vmin 2vmin 2vmin rgba(0,0,0,0.3);
         }
 
-        /* Панель управления */
+        /* Панель управления (Вынесена под проигрыватель) */
         .controls-panel {
-            position: absolute; bottom: 4%; left: 5%; right: 5%;
-            background: rgba(255,255,255,0.8); backdrop-filter: blur(5px);
-            padding: 2vmin 4vmin; border-radius: 4vmin;
-            display: flex; align-items: center; gap: 3vmin;
-            box-shadow: 0 1vmin 2vmin rgba(0,0,0,0.1);
+            width: 90vmin; max-width: 450px;
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(5px);
+            padding: 3vmin 4vmin; border-radius: 4vmin;
+            display: flex; align-items: center; gap: 4vmin;
+            box-shadow: 0 2vmin 4vmin rgba(0,0,0,0.15);
+            box-sizing: border-box;
         }
 
         .play-btn {
-            width: 8vmin; height: 8vmin; min-width: 8vmin; border-radius: 50%;
+            width: 10vmin; height: 10vmin; min-width: 10vmin; max-width: 60px; max-height: 60px; border-radius: 50%;
             background: var(--primary); color: white; border: none;
             display: flex; justify-content: center; align-items: center;
             cursor: pointer; transition: 0.2s; box-shadow: 0 1vmin 2vmin rgba(0,0,0,0.2);
         }
         .play-btn:hover { transform: scale(1.05); }
-        .play-btn svg { width: 4vmin; height: 4vmin; fill: currentColor; }
+        .play-btn svg { width: 5vmin; height: 5vmin; max-width: 30px; max-height: 30px; fill: currentColor; }
 
         /* Прогресс-бар */
-        .progress-container { flex: 1; display: flex; flex-direction: column; gap: 1vmin; }
-        .time-info { display: flex; justify-content: space-between; font-size: 2.5vmin; font-weight: bold; color: #555; font-family: monospace;}
+        .progress-container { flex: 1; display: flex; flex-direction: column; gap: 1.5vmin; }
+        .time-info { display: flex; justify-content: space-between; font-size: 3vmin; font-weight: bold; color: #555; font-family: monospace;}
         
         .progress-bar {
-            width: 100%; height: 1.5vmin; background: #ddd; border-radius: 1vmin;
+            width: 100%; height: 2vmin; max-height: 12px; background: #ddd; border-radius: 1vmin;
             cursor: pointer; position: relative; overflow: hidden;
         }
         .progress-fill {
@@ -177,7 +179,7 @@
         }
 
         /* Сообщение об ошибке */
-        #error-msg { position: absolute; top: 5%; background: #ff4757; color: white; padding: 1vmin 3vmin; border-radius: 2vmin; font-size: 3vmin; font-weight: bold; opacity: 0; transition: 0.3s; z-index: 20;}
+        #error-msg { position: absolute; top: 2%; left: 50%; transform: translateX(-50%); background: #ff4757; color: white; padding: 1.5vmin 4vmin; border-radius: 2vmin; font-size: 3vmin; font-weight: bold; opacity: 0; transition: 0.3s; z-index: 20; text-align: center; width: max-content;}
     </style>
 </head>
 <body>
@@ -201,18 +203,18 @@
                             <summary>🎤 Способ 1: Vocaroo (Самый простой)</summary>
                             <p>
                                 1. Перейдите на сайт <a href="https://vocaroo.com/" target="_blank" style="color:var(--primary); font-weight:bold;">Vocaroo.com</a>.<br>
-                                2. Нажмите на красную кнопку микрофона, чтобы записать голос, <b>ИЛИ</b> нажмите <i>"Загрузить"</i> (Upload) под кнопкой, чтобы выбрать готовый mp3-файл с компьютера.<br>
+                                2. Запишите голос на микрофон <b>ИЛИ</b> нажмите <i>"Загрузить"</i> (Upload) под кнопкой, чтобы выбрать mp3-файл с компьютера.<br>
                                 3. Нажмите <b>"Сохранить и поделиться"</b>.<br>
-                                4. Скопируйте появившуюся ссылку (например, <i>https://vocaroo.com/12345...</i>) и вставьте в поле выше.
+                                4. Скопируйте ссылку (например, <i>https://voca.ro/123...</i> или <i>https://vocaroo.com/123...</i>) и вставьте в поле выше.
                             </p>
                         </details>
 
                         <details>
                             <summary>📁 Способ 2: Google Диск</summary>
                             <p>
-                                1. Загрузите ваш аудиофайл (mp3 или wav) на свой Google Диск.<br>
-                                2. Кликните по загруженному файлу правой кнопкой мыши и выберите <b>"Поделиться"</b>.<br>
-                                3. В разделе "Общий доступ" обязательно измените настройку на <b>"Все, у кого есть ссылка"</b>.<br>
+                                1. Загрузите ваш аудиофайл (mp3 или wav) на Google Диск.<br>
+                                2. Кликните по файлу правой кнопкой мыши и выберите <b>"Поделиться"</b>.<br>
+                                3. В разделе "Общий доступ" измените настройку на <b>"Все, у кого есть ссылка"</b>.<br>
                                 4. Нажмите <b>"Копировать ссылку"</b> и вставьте её в поле выше. Виджет сам преобразует её в нужный формат!
                             </p>
                         </details>
@@ -229,7 +231,7 @@
                         <details>
                             <summary>🔗 Способ 4: Прямая ссылка</summary>
                             <p>
-                                Если у вас есть собственный сайт или хостинг, просто скопируйте прямую ссылку на файл. Она обязательно должна заканчиваться на <b>.mp3</b> или <b>.wav</b> (например: <i>https://mysite.com/audio/track.mp3</i>).
+                                Если у вас есть собственный хостинг или файлообменник, просто скопируйте прямую ссылку на файл. Она обязательно должна заканчиваться на <b>.mp3</b> или <b>.wav</b>.
                             </p>
                         </details>
                     </div>
@@ -281,37 +283,36 @@
 
 <!-- ВИДЖЕТ (ПЛЕЕР) -->
 <div id="widget-container">
-    <div id="error-msg">Ошибка загрузки аудио</div>
+    <div id="error-msg">Ошибка воспроизведения</div>
     
+    <!-- Вертушка -->
     <div class="turntable" id="turntable">
         <div class="vinyl">
             <div class="vinyl-label" id="vinylLabel">
                 <div class="vinyl-hole"></div>
             </div>
         </div>
-        
         <div class="tonearm">
             <div class="tonearm-stick"></div>
             <div class="tonearm-head"></div>
             <div class="tonearm-base"></div>
         </div>
-
-        <div class="controls-panel">
-            <button class="play-btn" id="playBtn" onclick="togglePlay()">
-                <!-- Иконка Play -->
-                <svg id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                <!-- Иконка Pause (скрыта) -->
-                <svg id="icon-pause" viewBox="0 0 24 24" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-            </button>
-            
-            <div class="progress-container">
-                <div class="time-info">
-                    <span id="currentTime">0:00</span>
-                    <span id="totalTime">0:00</span>
-                </div>
-                <div class="progress-bar" id="progressBar" onclick="seekAudio(event)">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
+    </div>
+    
+    <!-- Панель управления (теперь СНИЗУ) -->
+    <div class="controls-panel">
+        <button class="play-btn" id="playBtn" onclick="togglePlay()">
+            <svg id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <svg id="icon-pause" viewBox="0 0 24 24" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        </button>
+        
+        <div class="progress-container">
+            <div class="time-info">
+                <span id="currentTime">0:00</span>
+                <span id="totalTime">0:00</span>
+            </div>
+            <div class="progress-bar" id="progressBar" onclick="seekAudio(event)">
+                <div class="progress-fill" id="progressFill"></div>
             </div>
         </div>
     </div>
@@ -321,13 +322,13 @@
 
 <script>
 // ==========================================
-// УМНЫЙ КОНВЕРТЕР ССЫЛОК
+// УМНЫЙ КОНВЕРТЕР ССЫЛОК (ОБНОВЛЕН ДЛЯ VOCA.RO)
 // ==========================================
 function convertUrl(url) {
     if (!url) return '';
     try {
-        // Vocaroo
-        const vocMatch = url.match(/vocaroo\.com\/([a-zA-Z0-9]+)/);
+        // Vocaroo (и короткие voca.ro, и длинные vocaroo.com)
+        const vocMatch = url.match(/(?:vocaroo\.com|voca\.ro)\/([a-zA-Z0-9]+)/);
         if (vocMatch) return `https://media1.vocaroo.com/mp3/${vocMatch[1]}`;
         
         // Google Drive
@@ -415,7 +416,12 @@ if (configParam) {
 
     // Функция Play/Pause
     window.togglePlay = function() {
-        if (!audio.src || audio.src === window.location.href) return;
+        if (!audio.src || audio.src === window.location.href) {
+            errorMsg.innerText = "Аудио не добавлено";
+            errorMsg.style.opacity = '1';
+            setTimeout(() => errorMsg.style.opacity = '0', 3000);
+            return;
+        }
         
         if (audio.paused) {
             audio.play().then(() => {
@@ -423,9 +429,9 @@ if (configParam) {
                 iconPlay.style.display = 'none';
                 iconPause.style.display = 'block';
             }).catch(() => {
-                errorMsg.innerText = "Ошибка воспроизведения";
+                errorMsg.innerText = "Ошибка воспроизведения. Проверьте ссылку.";
                 errorMsg.style.opacity = '1';
-                setTimeout(() => errorMsg.style.opacity = '0', 3000);
+                setTimeout(() => errorMsg.style.opacity = '0', 4000);
             });
         } else {
             audio.pause();
@@ -462,8 +468,8 @@ else {
         const url = window.location.href.split('?')[0] + '?config=' + hash;
         
         document.getElementById('previewFrame').src = url;
-        // Код iframe (квадратный, 1:1, размер 600px для хорошего вида винила)
-        document.getElementById('codeOutput').value = `<iframe src="${url}" width="100%" height="600" style="border:none; aspect-ratio:1/1; max-width:600px; max-height:600px;" allowtransparency="true" allow="autoplay"></iframe>`;
+        // Код iframe для вытянутого виджета (высота больше ширины)
+        document.getElementById('codeOutput').value = `<iframe src="${url}" width="100%" height="650" style="border:none; max-width:500px; max-height:650px;" allowtransparency="true" allow="autoplay"></iframe>`;
     }
 
     window.copyCode = function() {
