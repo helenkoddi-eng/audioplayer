@@ -58,6 +58,7 @@
         
         /* Особое предупреждение Vocaroo */
         .warning-box { background: #ffe5e5; padding: 10px; border-radius: 8px; border: 1px solid #ffcccc; margin-top: 8px; color: #c0392b; font-size: 12px; }
+        .warning-box-yellow { background: #fff3cd; padding: 10px; border-radius: 8px; border: 1px solid #ffeeba; margin-top: 8px; color: #856404; font-size: 12px; }
 
         button.action-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px; }
         button.action-btn:hover { filter: brightness(1.1); }
@@ -232,22 +233,25 @@
                         </details>
 
                         <details>
-                            <summary>📁 Способ 2: Google Диск (Надёжно)</summary>
-                            <p>
-                                1. Загрузите аудиофайл (mp3/wav) на ваш Google Диск.<br>
-                                2. Кликните по файлу правой кнопкой мыши &rarr; <b>"Поделиться"</b>.<br>
-                                3. В разделе "Общий доступ" выберите <b>"Все, у кого есть ссылка"</b>.<br>
-                                4. Нажмите <b>"Копировать ссылку"</b> и вставьте её в поле выше. Виджет сам преобразует её в нужный формат!
-                            </p>
-                        </details>
-
-                        <details>
-                            <summary>📦 Способ 3: Dropbox</summary>
+                            <summary>📦 Способ 2: Dropbox (Самый надёжный 🔥)</summary>
                             <p>
                                 1. Загрузите аудиофайл в Dropbox.<br>
                                 2. Нажмите кнопку <b>"Поделиться"</b> (Share) &rarr; "Копировать ссылку" (Copy link).<br>
                                 3. Вставьте скопированную ссылку в поле выше.
                             </p>
+                        </details>
+
+                        <details>
+                            <summary>📁 Способ 3: Google Диск (Может выдавать ошибку)</summary>
+                            <p>
+                                1. Загрузите аудиофайл на Google Диск.<br>
+                                2. Кликните правой кнопкой мыши &rarr; <b>"Поделиться"</b>.<br>
+                                3. Выберите <b>"Все, у кого есть ссылка"</b>.<br>
+                                4. Нажмите <b>"Копировать ссылку"</b> и вставьте её выше.
+                            </p>
+                            <div class="warning-box-yellow">
+                                <b>⚠️ ВНИМАНИЕ:</b> Из-за новых политик безопасности Google часто блокирует воспроизведение звука на сторонних сайтах. Если виджет выдает "Ошибку загрузки аудио" — используйте <b>Способ 2 (Dropbox)</b>, он работает безотказно!
+                            </div>
                         </details>
 
                         <details>
@@ -373,9 +377,9 @@ function convertUrl(url) {
         const vocMatch = url.match(/(?:vocaroo\.com|voca\.ro)\/([a-zA-Z0-9_-]+)/);
         if (vocMatch) return `https://media.vocaroo.com/mp3/${vocMatch[1]}`;
         
-        // Google Drive
-        const gdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-        if (gdMatch) return `https://drive.google.com/uc?export=download&id=${gdMatch[1]}`;
+        // Google Drive (ОБНОВЛЕНО: используем docs.google.com для обхода некоторых блокировок CORS)
+        const gdMatch = url.match(/\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/);
+        if (gdMatch) return `https://docs.google.com/uc?export=download&id=${gdMatch[1]}`;
         
         // Dropbox
         if (url.includes('dropbox.com')) return url.replace('dl=0', 'dl=1').replace('?dl=0', '?dl=1');
